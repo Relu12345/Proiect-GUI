@@ -29,7 +29,12 @@ public class FloorObjectSpawner : MonoBehaviour
 
         meshes.HideMesh = false;
         WallObjectSpawner wallScript = GetComponent<WallObjectSpawner>();
-        wallScript.SpawnObjectsOnWalls();
+        ObjectSpawnInstance[] refs = GameObject.Find("Object References").GetComponentsInChildren<ObjectSpawnInstance>();
+        foreach (ObjectSpawnInstance instance in refs)
+        {
+            if (instance != null)
+                wallScript.SpawnObjectsOnWalls(instance);
+        }
     }
 
     public void ShowMeshesManually()

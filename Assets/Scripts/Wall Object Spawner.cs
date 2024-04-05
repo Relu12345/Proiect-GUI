@@ -5,14 +5,15 @@ using UnityEngine;
 
 public class WallObjectSpawner : MonoBehaviour
 {
-    public GameObject objectToSpawn; // Assign the prefab you want to spawn in the inspector
-    public int numberOfObjectsToSpawn = 5; // Set this number in the editor
-    public float offset = 0.1f; // Adjust this value to set how far in front of the wall the objects should spawn
     public float checkRadius = 0.5f; // Radius for the overlap test to check for existing objects
     public float targetTime = 60.0f;
 
-    public void SpawnObjectsOnWalls()
+    public void SpawnObjectsOnWalls(ObjectSpawnInstance obj)
     {
+        GameObject objectToSpawn = obj.gameObj;
+        int numberOfObjectsToSpawn = obj.intValue;
+        float offset = obj.offset;
+
         MRUKRoom currentRoom = MRUK.Instance.GetCurrentRoom();
         List<MRUKAnchor> wallAnchors = currentRoom.GetWallAnchors();
 
