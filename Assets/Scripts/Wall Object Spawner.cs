@@ -125,7 +125,7 @@ public class WallObjectSpawner : MonoBehaviour
 
                             worldPositionOnPlane = randomWallAnchor.transform.TransformPoint(randomPositionOnPlane);
                             randomWallAnchor.GetClosestSurfacePosition(worldPositionOnPlane, out positionOnWall);
-                            positionOnWall += facingDirection * offset;
+                            positionOnWall += facingDirection * 0.5f;
                         }
                     }
                 }

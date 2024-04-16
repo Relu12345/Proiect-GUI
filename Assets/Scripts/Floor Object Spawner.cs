@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class FloorObjectSpawner : MonoBehaviour
 {
-    public GameObject objectToMove; // Assign the prefab you want to spawn in the inspector
+    public GameObject objectToMove, objectToSpawn; // Assign the prefab you want to spawn in the inspector
     public int numberOfObjectsToSpawn = 5; // Set this number in the editor
     public float offsetFromFloor = 0.1f; // Adjust this value to set how far in front of the wall the objects should spawn
     public float targetTime = 60.0f;
@@ -35,11 +35,13 @@ public class FloorObjectSpawner : MonoBehaviour
             if (instance != null)
                 wallScript.SpawnObjectsOnWalls(instance);
         }
+        Instantiate(objectToSpawn, new Vector3(0, -0.25f, 0), Quaternion.identity);
     }
 
     public void ShowMeshesManually()
     {
         meshes.HideMesh = false;
+        Instantiate(objectToSpawn, new Vector3(0, -0.25f, 0), Quaternion.identity);
     }
 
     public void SpawnObjects()
