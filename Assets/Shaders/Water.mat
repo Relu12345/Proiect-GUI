@@ -29,7 +29,7 @@ Material:
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2000
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -55,9 +55,9 @@ Material:
     - _RippleDensity: 10
     - _RippleSlimness: 6
     - _RippleSpeed: 1
-    - _WaveScale: 2
-    - _WaveSpeed: 0.05
+    - _WaveScale: 0
+    - _WaveSpeed: 0
     m_Colors:
-    - _BaseColor: {r: 0.18572447, g: 0.5966171, b: 0.8867924, a: 0}
-    - _RippleColor: {r: 2.4887877, g: 0.074312635, b: 0.014087274, a: 0}
+    - _BaseColor: {r: 0.18572444, g: 0.5966171, b: 0.8867924, a: 0.69411767}
+    - _RippleColor: {r: 1.5429232, g: 2.4442656, b: 2.6988428, a: 0.5803922}
   m_BuildTextureStacks: []
