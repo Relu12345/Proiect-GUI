@@ -7,4 +7,5 @@ public class ObjectSpawnInstance : MonoBehaviour
     public GameObject gameObj;
     public int intValue;
     public float offset;
+    public bool isWindow;
 }

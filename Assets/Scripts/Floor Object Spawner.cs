@@ -2,6 +2,7 @@ using Meta.XR.MRUtilityKit;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class FloorObjectSpawner : MonoBehaviour
 {
@@ -11,8 +12,23 @@ public class FloorObjectSpawner : MonoBehaviour
     public float targetTime = 60.0f;
     public EffectMesh meshes;
 
+    public static bool isWaterSpawned = false;
+
     private void Start()
     {
+        StartCoroutine(WaitASecMan());
+    }
+
+    private IEnumerator WaitASecMan()
+    {
+        float time = 0f;
+
+        while (time < 0.05f)
+        {
+            time += Time.deltaTime;
+            yield return null;
+        }
+
         // StartCoroutine(TimerCoroutine(targetTime));
         SpawnObjects();
     }
@@ -35,13 +51,41 @@ public class FloorObjectSpawner : MonoBehaviour
             if (instance != null)
                 wallScript.SpawnObjectsOnWalls(instance);
         }
-        Instantiate(objectToSpawn, new Vector3(0, -0.25f, 0), Quaternion.identity);
+        SpawnWater();
     }
 
     public void ShowMeshesManually()
     {
         meshes.HideMesh = false;
-        Instantiate(objectToSpawn, new Vector3(0, -0.25f, 0), Quaternion.identity);
+        WallObjectSpawner wallScript = GetComponent<WallObjectSpawner>();
+        ObjectSpawnInstance[] refs = GameObject.Find("Object References").GetComponentsInChildren<ObjectSpawnInstance>();
+        foreach (ObjectSpawnInstance instance in refs)
+        {
+            if (instance != null)
+                wallScript.SpawnObjectsOnWalls(instance);
+        }
+        SpawnWater();
+    }
+
+    void SpawnWater()
+    {
+        GameObject obj = Instantiate(objectToSpawn, new Vector3(0, -0.25f, 0), Quaternion.identity);
+
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        Bounds roomBounds = room.GetRoomBounds();
+        Vector3 roomSize = roomBounds.size;
+        Vector3 roomPosition = roomBounds.center;
+
+        Vector3 newScale = obj.transform.localScale;
+        Vector3 newPosition = obj.transform.position;
+        newScale.x = roomSize.x / 10 + 0.1f;
+        newScale.z = roomSize.z / 10 + 0.1f;
+        newPosition.x = roomPosition.x;
+        newPosition.z = roomPosition.z;
+        obj.transform.localScale = newScale;
+        obj.transform.position = newPosition;
+
+        isWaterSpawned = true;
     }
 
     public void SpawnObjects()
@@ -132,7 +176,7 @@ public class FloorObjectSpawner : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Selected wall anchor does not have a plane.");
+                Debug.LogError("Selected floor anchor does not have a plane.");
             }
         }
     }

@@ -29,7 +29,7 @@ Material:
   m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -50,14 +50,30 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _QueueControl: 0
+    - _AlphaClip: 1
+    - _AlphaToMask: 1
+    - _BUILTIN_QueueControl: -1
+    - _BUILTIN_QueueOffset: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 1
+    - _CastShadows: 1
+    - _Cull: 0
+    - _DstBlend: 0
+    - _QueueControl: 1
     - _QueueOffset: 0
+    - _ReceiveShadows: 1
     - _RippleDensity: 10
     - _RippleSlimness: 6
     - _RippleSpeed: 1
+    - _SrcBlend: 1
+    - _Surface: 0
     - _WaveScale: 0
     - _WaveSpeed: 0
+    - _WorkflowMode: 1
+    - _ZTest: 4
+    - _ZWrite: 1
+    - _ZWriteControl: 0
     m_Colors:
-    - _BaseColor: {r: 0.18572444, g: 0.5966171, b: 0.8867924, a: 0.69411767}
-    - _RippleColor: {r: 1.5429232, g: 2.4442656, b: 2.6988428, a: 0.5803922}
+    - _BaseColor: {r: 0, g: 0.28112146, b: 0.4792453, a: 0.050980393}
+    - _RippleColor: {r: 1.5429232, g: 2.4442656, b: 2.6988428, a: 0.21176471}
   m_BuildTextureStacks: []

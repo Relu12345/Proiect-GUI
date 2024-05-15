@@ -1,28 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class UnderwaterStateChanger : MonoBehaviour
 {
     public Transform mainCamera;
-    public Volume postProcessingVolume;
-    public VolumeProfile surfacePostProcessing;
-    public VolumeProfile underwaterPostProcessing;
+    public Texture2D normalLutTexture;
+    public Texture2D blueLutTexture;
+    public OVRPassthroughLayer passthroughLayer;
 
+    private OVRPassthroughColorLut lutNormal;
+    private OVRPassthroughColorLut lutBlue;
     private float depth = 0;
+    private TMP_Text depthText;
+
+    private bool wasUnderwater = false;
+
+    private void Start()
+    {
+        lutNormal = new OVRPassthroughColorLut(normalLutTexture, true);
+        lutBlue = new OVRPassthroughColorLut(blueLutTexture, true);
+        depthText = GameObject.Find("[BuildingBlock] Camera Rig/TrackingSpace/CenterEyeAnchor/Text (TMP) (1)").GetComponent<TMP_Text>();
+        GameObject background = depthText.transform.GetChild(0).gameObject;
+        background.SetActive(true);
+    }
 
     void Update()
     {
-        depth = WaterPos();
-
-        if (mainCamera.position.y < depth)
+        if (FloorObjectSpawner.isWaterSpawned == true)
         {
-            EnableEffects(true);
-        }
-        else
-        {
-            EnableEffects(false);
+            depth = WaterPos();
+            if (mainCamera.position.y < depth + 0.5f)
+            {
+                EnableEffects(true);
+            }
+            else
+            {
+                EnableEffects(false);
+            }
         }
     }
 
@@ -36,13 +53,13 @@ public class UnderwaterStateChanger : MonoBehaviour
     {
         if (active)
         {
-            RenderSettings.fog = true;
-            postProcessingVolume.profile = underwaterPostProcessing;
+            passthroughLayer.SetColorLut(lutNormal, lutBlue, 1);
+            depthText.text = "blue";
         }
         else
         {
-            RenderSettings.fog = false;
-            postProcessingVolume.profile = surfacePostProcessing;
+            passthroughLayer.SetColorLut(lutBlue, lutNormal, 1);
+            depthText.text = "normal";
         }
     }
 }

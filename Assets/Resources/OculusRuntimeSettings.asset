@@ -15,9 +15,9 @@ MonoBehaviour:
   colorSpace: 7
   requestsVisualFaceTracking: 1
   requestsAudioFaceTracking: 1
-  hasSentConsentEvent: 1
-  hasSetTelemetryEnabled: 1
-  telemetryEnabled: 1
-  telemetryProjectGuid: a84b2dff-fe01-4f7b-aa24-2ef9146e6102
+  hasSentConsentEvent: 0
+  hasSetTelemetryEnabled: 0
+  telemetryEnabled: 0
+  telemetryProjectGuid: 3b9989d8-9d30-4ab2-a103-bee396288dc2
   bodyTrackingFidelity: 1
   bodyTrackingJointSet: 0

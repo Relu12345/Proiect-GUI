@@ -13,14 +13,30 @@ public class WallObjectSpawner : MonoBehaviour
         GameObject objectToSpawn = obj.gameObj;
         int numberOfObjectsToSpawn = obj.intValue;
         float offset = obj.offset;
+        bool isWindow = obj.isWindow;
 
         MRUKRoom currentRoom = MRUK.Instance.GetCurrentRoom();
-        List<MRUKAnchor> wallAnchors = currentRoom.GetWallAnchors();
+        List<MRUKAnchor> wallAnchors = currentRoom.GetRoomAnchors();
+
+        if (isWindow)
+        {
+            wallAnchors.RemoveAll(anchor => !anchor.HasLabel("WINDOW_FRAME"));
+            numberOfObjectsToSpawn = wallAnchors.Count;
+        }
 
         for (int i = 0; i < numberOfObjectsToSpawn; i++)
         {
-            MRUKAnchor randomWallAnchor = wallAnchors[Random.Range(0, wallAnchors.Count)];
-            if (randomWallAnchor.HasPlane)
+            MRUKAnchor randomWallAnchor;
+            if (isWindow)
+            {
+                randomWallAnchor = wallAnchors[i];
+            }
+            else
+            {
+                randomWallAnchor = wallAnchors[Random.Range(0, wallAnchors.Count)];
+            }
+
+            if (randomWallAnchor.PlaneRect.HasValue)
             {
                 Vector2 planeSize = randomWallAnchor.PlaneRect.Value.size;
                 Vector3 randomPositionOnPlane = new Vector3(
@@ -66,12 +82,9 @@ public class WallObjectSpawner : MonoBehaviour
 
                 // Get the list of room anchors
                 List<MRUKAnchor> roomAnchors = currentRoom.GetRoomAnchors();
+                MRUKAnchor floorAnchor = currentRoom.GetFloorAnchor();
 
-                foreach (MRUKAnchor wAnchor in wallAnchors)
-                {
-                    // Remove floorAnchor from the list
-                    roomAnchors.Remove(wAnchor);
-                }
+                roomAnchors.Remove(floorAnchor);
 
                 // Initialize a flag to keep track of whether a free position is found
                 bool foundFreePosition = false;
@@ -105,7 +118,7 @@ public class WallObjectSpawner : MonoBehaviour
 
                     if (hitColliders.Length == 0 && !overlaps) // No overlapping bounds found and no anchor overlaps, safe to spawn
                     {
-                        Debug.Log("Object's new position: " + positionOnWall);
+                        Debug.Log("[TEST] Object's new position: " + positionOnWall);
 
                         // Set the flag to true to exit the loop
                         foundFreePosition = true;
@@ -113,7 +126,7 @@ public class WallObjectSpawner : MonoBehaviour
                     else
                     {
                         // Debug a warning if the position is occupied and try a different position
-                        Debug.LogWarning("Position: " + positionOnWall + " is occupied by other objects or anchors. Trying another position.");
+                        Debug.LogWarning("[TEST] Position: " + positionOnWall + " is occupied by other objects or anchors. Trying another position.");
 
                         // Try a new position
                         while (!(positionOnWall.y >= 1f && positionOnWall.y <= 1.7f))
@@ -130,7 +143,22 @@ public class WallObjectSpawner : MonoBehaviour
                     }
                 }
 
-                GameObject spawnedObject = Instantiate(objectToSpawn, positionOnWall, Quaternion.identity);
+                GameObject spawnedObject;
+
+                if (isWindow) {
+                    Vector3 scale = randomWallAnchor.GetAnchorSize();
+                    objectToSpawn.transform.localScale = new Vector3(scale.x + 0.25f, scale.y + 0.25f, 1f);
+
+                    // If it's a window, spawn it at the center of the anchor
+                    Vector3 spawnPosition = randomWallAnchor.GetAnchorCenter() + facingDirection * offset;
+                    spawnPosition.y = spawnPosition.y - 0.15f;
+                    spawnedObject = Instantiate(objectToSpawn, spawnPosition, Quaternion.identity);
+                }
+
+                else
+                {
+                    spawnedObject = Instantiate(objectToSpawn, positionOnWall, Quaternion.identity);
+                }
 
                 // Determine the rotation based on the facing direction
                 if (Mathf.Abs(facingDirection.x) > Mathf.Abs(facingDirection.z))
@@ -145,11 +173,14 @@ public class WallObjectSpawner : MonoBehaviour
                     float yRotation = facingDirection.z > 0 ? -180f : 0f;
                     spawnedObject.transform.Rotate(0, yRotation, 0);
                 }
-                Debug.Log("Object " + i + " has direction: " + facingDirection);
+                Debug.Log("[TEST] Object " + i + " has direction: " + facingDirection);
             }
             else
             {
-                Debug.LogError("Selected wall anchor does not have a plane.");
+                if (isWindow)
+                    Debug.LogError("[TEST] Selected window anchor does not have a plane.");
+                else
+                    Debug.LogError("[TEST] Selected wall anchor does not have a plane.");
             }
         }
     }
