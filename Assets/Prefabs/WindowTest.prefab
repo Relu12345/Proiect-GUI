@@ -236,11 +236,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-<<<<<<< HEAD
   - {fileID: 2100000, guid: af79226cbc4f0664ab5597f6b2e98010, type: 2}
-=======
-  - {fileID: 2100000, guid: 6f27b7266b942814b8730dfc4352203a, type: 2}
->>>>>>> parent of bf724cd (bug fixes)
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
