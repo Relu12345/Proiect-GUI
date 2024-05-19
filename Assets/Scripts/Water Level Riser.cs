@@ -2,9 +2,7 @@ using Meta.XR.MRUtilityKit;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class WaterLevelRiser : MonoBehaviour
 {
@@ -19,9 +17,14 @@ public class WaterLevelRiser : MonoBehaviour
 
     void Start()
     {
-        timerText = GameObject.Find("[BuildingBlock] Camera Rig/TrackingSpace/CenterEyeAnchor/Text (TMP)").GetComponent<TMP_Text>();
-        GameObject background = timerText.transform.GetChild(0).gameObject;
-        background.SetActive(true);
+        Canvas canvas = GameObject.Find("Timer Canvas(Clone)").GetComponent<Canvas>();
+        timerText = canvas.GetComponentInChildren<TMP_Text>();
+        canvas.worldCamera = GameObject.Find("[BuildingBlock] Camera Rig/TrackingSpace/CenterEyeAnchor/UI Camera").GetComponent<Camera>();
+        canvas.transform.parent = canvas.worldCamera.transform;
+        Vector3 cameraPos = canvas.worldCamera.transform.position;
+        canvas.transform.localPosition = new Vector3(-0.125f, 0.3f, 0.4f);
+        canvas.transform.localRotation = Quaternion.identity;
+
 
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         MRUKAnchor ceilingAnchor = room.GetCeilingAnchor();
@@ -62,7 +65,7 @@ public class WaterLevelRiser : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene(0);
+            Debug.Log("Game Over");
         }
     }
 }
