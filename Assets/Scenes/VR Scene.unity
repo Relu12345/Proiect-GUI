@@ -2858,11 +2858,11 @@ VideoPlayer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 232191777}
   m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 8491e97ce536b94468dbd9d54825c2cd, type: 3}
+  m_VideoClip: {fileID: 32900000, guid: 02c785abf13b9e848b876037176bbd18, type: 3}
   m_TargetCameraAlpha: 1
   m_TargetCamera3DLayout: 0
   m_TargetCamera: {fileID: 370518525}
-  m_TargetTexture: {fileID: 8400000, guid: a94180c6115a12940b853fd1a59d2fde, type: 2}
+  m_TargetTexture: {fileID: 8400000, guid: ad3a02ce28f84cf4d95642e653ca4fd8, type: 2}
   m_TimeReference: 0
   m_TargetMaterialRenderer: {fileID: 0}
   m_TargetMaterialProperty: <noninit>
