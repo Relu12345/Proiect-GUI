@@ -46,6 +46,8 @@ public class Keypad : MonoBehaviour
     {
         ClearInput();
         panelMesh.material.SetVector("_EmissionColor", screenNormalColor * screenIntensity);
+        StartCoroutine(WaitASecMan());
+
     }
 
 
@@ -85,6 +87,23 @@ public class Keypad : MonoBehaviour
             Debug.LogWarning("Couldn't process input for some reason..");
         }
 
+    }
+
+    private IEnumerator WaitASecMan()
+    {
+        while (PaperHandler.numbers.Count == 0)
+        {
+            yield return null;
+        }
+
+        keypadCombo = 0;
+
+        foreach (var number in PaperHandler.numbers)
+        {
+            keypadCombo = keypadCombo * 10 + number;
+        }
+        BoxAnimation crate = GameObject.Find("anim_crate(Clone)").GetComponent<BoxAnimation>();
+        onAccessGranted.AddListener(crate.PlayAnim);
     }
 
     //mainly for animations 

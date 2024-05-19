@@ -8,32 +8,88 @@ public class WallObjectSpawner : MonoBehaviour
     public float checkRadius = 0.5f; // Radius for the overlap test to check for existing objects
     public float targetTime = 60.0f;
 
+    private int whileTries;
     public void SpawnObjectsOnWalls(ObjectSpawnInstance obj)
     {
+        whileTries = 5;
         GameObject objectToSpawn = obj.gameObj;
         int numberOfObjectsToSpawn = obj.intValue;
         float offset = obj.offset;
         bool isWindow = obj.isWindow;
+        bool isOnObject = obj.isOnObject;
+        float heightMin = obj.heightMin;
+        float heightMax = obj.heightMax;
 
         MRUKRoom currentRoom = MRUK.Instance.GetCurrentRoom();
-        List<MRUKAnchor> wallAnchors = currentRoom.GetRoomAnchors();
+        List<MRUKAnchor> wallAnchors = new List<MRUKAnchor>();
+
+        foreach (var anchor in currentRoom.GetRoomAnchors())
+        {
+            if (anchor.HasLabel("WALL_FACE"))
+            {
+                wallAnchors.Add(anchor);
+            }
+        }
+
+        List<MRUKAnchor> windowAnchors = new List<MRUKAnchor>();
+
+        foreach (var anchor in currentRoom.GetRoomAnchors())
+        {
+            if (anchor.HasLabel("WINDOW_FRAME"))
+            {
+                windowAnchors.Add(anchor);
+            }
+        }
 
         if (isWindow)
         {
-            wallAnchors.RemoveAll(anchor => !anchor.HasLabel("WINDOW_FRAME"));
-            numberOfObjectsToSpawn = wallAnchors.Count;
+            numberOfObjectsToSpawn = windowAnchors.Count;
+
+            Debug.Log($"[TEST] WINDOW ANCHORS: {windowAnchors.Count}");
+        }
+        else if (!isWindow && !isOnObject)
+        {
+            Debug.Log($"[TEST] WALL ANCHORS: {wallAnchors.Count}");
         }
 
         for (int i = 0; i < numberOfObjectsToSpawn; i++)
         {
-            MRUKAnchor randomWallAnchor;
+            MRUKAnchor randomWallAnchor = null;
+            HashSet<int> triedWallIndices = new HashSet<int>();
+
             if (isWindow)
             {
-                randomWallAnchor = wallAnchors[i];
+                randomWallAnchor = windowAnchors[i];
             }
-            else
+            else if (isOnObject)
             {
-                randomWallAnchor = wallAnchors[Random.Range(0, wallAnchors.Count)];
+                randomWallAnchor = currentRoom.FloorAnchor;
+            }
+            else if (!isWindow && !isOnObject)
+            {
+                bool foundValidWall = false;
+                while (!foundValidWall)
+                {
+                    if (triedWallIndices.Count >= wallAnchors.Count)
+                    {
+                        Debug.LogError("No valid walls with planes found.");
+                        return;
+                    }
+
+                    int randomIndex = Random.Range(0, wallAnchors.Count);
+                    if (triedWallIndices.Contains(randomIndex))
+                    {
+                        continue;
+                    }
+
+                    randomWallAnchor = wallAnchors[randomIndex];
+                    triedWallIndices.Add(randomIndex);
+
+                    if (randomWallAnchor.PlaneRect.HasValue)
+                    {
+                        foundValidWall = true;
+                    }
+                }
             }
 
             if (randomWallAnchor.PlaneRect.HasValue)
@@ -58,8 +114,12 @@ public class WallObjectSpawner : MonoBehaviour
                 positionOnWall += facingDirection * offset;
 
                 // Keep trying to find a position until it's within the desired range
-                while (!(positionOnWall.y >= 1f && positionOnWall.y <= 1.7f))
+                while (!(positionOnWall.y >= heightMin && positionOnWall.y <= heightMax))
                 {
+                    if (whileTries <= 0)
+                    {
+                        break;
+                    }
                     randomPositionOnPlane = new Vector3(
                         Random.Range(-planeSize.x / 2, planeSize.x / 2),
                         Random.Range(-planeSize.y / 2, planeSize.y / 2),
@@ -68,7 +128,11 @@ public class WallObjectSpawner : MonoBehaviour
                     worldPositionOnPlane = randomWallAnchor.transform.TransformPoint(randomPositionOnPlane);
                     randomWallAnchor.GetClosestSurfacePosition(worldPositionOnPlane, out positionOnWall);
                     positionOnWall += facingDirection * offset;
+
+                    whileTries--;
                 }
+
+                whileTries = 5;
 
                 // Get all renderers of the object's children
                 Renderer[] childRenderers = objectToSpawn.GetComponentsInChildren<Renderer>();
@@ -129,8 +193,12 @@ public class WallObjectSpawner : MonoBehaviour
                         Debug.LogWarning("[TEST] Position: " + positionOnWall + " is occupied by other objects or anchors. Trying another position.");
 
                         // Try a new position
-                        while (!(positionOnWall.y >= 1f && positionOnWall.y <= 1.7f))
+                        while (!(positionOnWall.y >= heightMin && positionOnWall.y <= heightMax))
                         {
+                            if (whileTries <= 0)
+                            {
+                                break;
+                            }
                             randomPositionOnPlane = new Vector3(
                                 Random.Range(-planeSize.x / 2, planeSize.x / 2),
                                 Random.Range(-planeSize.y / 2, planeSize.y / 2),
@@ -139,6 +207,7 @@ public class WallObjectSpawner : MonoBehaviour
                             worldPositionOnPlane = randomWallAnchor.transform.TransformPoint(randomPositionOnPlane);
                             randomWallAnchor.GetClosestSurfacePosition(worldPositionOnPlane, out positionOnWall);
                             positionOnWall += facingDirection * 0.5f;
+                            whileTries--;
                         }
                     }
                 }

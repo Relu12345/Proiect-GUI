@@ -23,13 +23,13 @@ public class FloorObjectSpawner : MonoBehaviour
     {
         float time = 0f;
 
-        while (time < 0.05f)
+        while (time < 0.1f)
         {
             time += Time.deltaTime;
             yield return null;
         }
 
-        // StartCoroutine(TimerCoroutine(targetTime));
+        StartCoroutine(TimerCoroutine(targetTime));
         SpawnObjects();
     }
 
