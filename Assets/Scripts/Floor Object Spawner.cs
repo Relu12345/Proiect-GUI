@@ -29,7 +29,7 @@ public class FloorObjectSpawner : MonoBehaviour
             yield return null;
         }
 
-        // StartCoroutine(TimerCoroutine(targetTime));
+        StartCoroutine(TimerCoroutine(targetTime));
         SpawnObjects();
     }
 
