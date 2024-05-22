@@ -1,3 +1,4 @@
+using Oculus.Interaction;
 using System;
 using System.Collections;
 using TMPro;
@@ -47,7 +48,6 @@ public class Keypad : MonoBehaviour
         ClearInput();
         panelMesh.material.SetVector("_EmissionColor", screenNormalColor * screenIntensity);
         StartCoroutine(WaitASecMan());
-
     }
 
 
@@ -102,9 +102,7 @@ public class Keypad : MonoBehaviour
         {
             keypadCombo = keypadCombo * 10 + number;
         }
-        BoxAnimation crate = GameObject.Find("anim_crate(Clone)").GetComponent<BoxAnimation>();
-        onAccessGranted.AddListener(crate.PlayAnim);
-    }
+        }
 
     //mainly for animations 
     private IEnumerator DisplayResultRoutine(bool granted)
@@ -141,6 +139,9 @@ public class Keypad : MonoBehaviour
         accessWasGranted = true;
         keypadDisplayText.text = accessGrantedText;
         onAccessGranted?.Invoke();
+        GameObject crate = GameObject.Find("Box(Clone)").gameObject;
+        Grabbable grabbable = crate.GetComponentInChildren<Grabbable>();
+        grabbable.enabled = true;
         panelMesh.material.SetVector("_EmissionColor", screenGrantedColor * screenIntensity);
         audioSource.PlayOneShot(accessGrantedSfx);
     }

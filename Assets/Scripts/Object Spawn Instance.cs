@@ -11,4 +11,5 @@ public class ObjectSpawnInstance : MonoBehaviour
     public float heightMax;
     public bool isWindow;
     public bool isOnObject;
+    public bool isOnDoor;
 }

@@ -1,4 +1,5 @@
 using Meta.XR.MRUtilityKit;
+using Oculus.Interaction;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,7 +30,7 @@ public class FloorObjectSpawner : MonoBehaviour
             yield return null;
         }
 
-        StartCoroutine(TimerCoroutine(targetTime));
+        // StartCoroutine(TimerCoroutine(targetTime));
         SpawnObjects();
     }
 

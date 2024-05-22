@@ -17,11 +17,13 @@ public class WallObjectSpawner : MonoBehaviour
         float offset = obj.offset;
         bool isWindow = obj.isWindow;
         bool isOnObject = obj.isOnObject;
+        bool isOnDoor = obj.isOnDoor;
         float heightMin = obj.heightMin;
         float heightMax = obj.heightMax;
 
         MRUKRoom currentRoom = MRUK.Instance.GetCurrentRoom();
         List<MRUKAnchor> wallAnchors = new List<MRUKAnchor>();
+        MRUKAnchor doorAnchor = null;
 
         foreach (var anchor in currentRoom.GetRoomAnchors())
         {
@@ -52,6 +54,20 @@ public class WallObjectSpawner : MonoBehaviour
             Debug.Log($"[TEST] WALL ANCHORS: {wallAnchors.Count}");
         }
 
+        if (isOnDoor)
+        {
+            numberOfObjectsToSpawn = 1;
+            foreach (var anchor in currentRoom.GetRoomAnchors())
+            {
+                if (anchor.HasLabel("DOOR_FRAME"))
+                {
+                    Debug.Log($"FOUND DOOR: {anchor.GetAnchorCenter()}");
+                    doorAnchor = anchor;
+                    break;
+                }
+            }
+        }
+
         for (int i = 0; i < numberOfObjectsToSpawn; i++)
         {
             MRUKAnchor randomWallAnchor = null;
@@ -64,6 +80,10 @@ public class WallObjectSpawner : MonoBehaviour
             else if (isOnObject)
             {
                 randomWallAnchor = currentRoom.FloorAnchor;
+            }
+            else if (isOnDoor)
+            {
+                randomWallAnchor = doorAnchor;
             }
             else if (!isWindow && !isOnObject)
             {
@@ -92,47 +112,66 @@ public class WallObjectSpawner : MonoBehaviour
                 }
             }
 
-            if (randomWallAnchor.PlaneRect.HasValue)
+            if (randomWallAnchor.PlaneRect.HasValue || randomWallAnchor.VolumeBounds.HasValue)
             {
-                Vector2 planeSize = randomWallAnchor.PlaneRect.Value.size;
-                Vector3 randomPositionOnPlane = new Vector3(
-                    Random.Range(-planeSize.x / 2, planeSize.x / 2),
-                    Random.Range(-planeSize.y / 2, planeSize.y / 2),
-                    0);
-
-                // Convert the random position on the plane to world space
-                Vector3 worldPositionOnPlane = randomWallAnchor.transform.TransformPoint(randomPositionOnPlane);
-
-                // Use GetClosestSurfacePosition to ensure the position is on the wall's surface
-                Vector3 positionOnWall;
-                randomWallAnchor.GetClosestSurfacePosition(worldPositionOnPlane, out positionOnWall);
-
-                // Get the normalized facing direction of the wall anchor
+                Vector2 planeSize = Vector2.zero;
+                Vector3 positionOnWall = Vector3.zero;
                 Vector3 facingDirection = currentRoom.GetFacingDirection(randomWallAnchor).normalized;
+                Vector3 worldPositionOnPlane = Vector3.zero;
+                Vector3 randomPositionOnPlane = Vector3.zero;
 
-                // Adjust the position to be slightly in front of the wall based on the wall's normal (facing direction)
-                positionOnWall += facingDirection * offset;
-
-                // Keep trying to find a position until it's within the desired range
-                while (!(positionOnWall.y >= heightMin && positionOnWall.y <= heightMax))
+                if (isOnDoor)
                 {
-                    if (whileTries <= 0)
-                    {
-                        break;
-                    }
+                    Rect doorRect = randomWallAnchor.PlaneRect.Value;
+
+                    // Calculate the position at the leftmost side of the door bounds
+                    Vector3 doorCenter = randomWallAnchor.transform.TransformPoint(doorRect.center);
+                    Vector3 leftMostSide = doorCenter + randomWallAnchor.transform.TransformVector(new Vector3(-doorRect.width / 2 + 0.1f, 0, 0));
+
+                    // Adjust the position to be slightly in front of the door based on the door's normal (facing direction)
+                    positionOnWall = leftMostSide + facingDirection * offset;
+                    positionOnWall.y -= 0.1f;
+
+                    // Ensure the position's rotation is set to zero
+                    objectToSpawn.transform.rotation = Quaternion.identity;
+                }
+                else
+                {
+                    planeSize = randomWallAnchor.PlaneRect.Value.size;
                     randomPositionOnPlane = new Vector3(
                         Random.Range(-planeSize.x / 2, planeSize.x / 2),
                         Random.Range(-planeSize.y / 2, planeSize.y / 2),
                         0);
 
+                    // Convert the random position on the plane to world space
                     worldPositionOnPlane = randomWallAnchor.transform.TransformPoint(randomPositionOnPlane);
+
                     randomWallAnchor.GetClosestSurfacePosition(worldPositionOnPlane, out positionOnWall);
+
+                    // Adjust the position to be slightly in front of the wall based on the wall's normal (facing direction)
                     positionOnWall += facingDirection * offset;
 
-                    whileTries--;
-                }
+                    // Keep trying to find a position until it's within the desired range
+                    while (!(positionOnWall.y >= heightMin && positionOnWall.y <= heightMax))
+                    {
+                        if (whileTries <= 0)
+                        {
+                            break;
+                        }
+                        randomPositionOnPlane = new Vector3(
+                            Random.Range(-planeSize.x / 2, planeSize.x / 2),
+                            Random.Range(-planeSize.y / 2, planeSize.y / 2),
+                            0);
 
-                whileTries = 5;
+                        worldPositionOnPlane = randomWallAnchor.transform.TransformPoint(randomPositionOnPlane);
+                        randomWallAnchor.GetClosestSurfacePosition(worldPositionOnPlane, out positionOnWall);
+                        positionOnWall += facingDirection * offset;
+
+                        whileTries--;
+                    }
+
+                    whileTries = 5;
+                }
 
                 // Get all renderers of the object's children
                 Renderer[] childRenderers = objectToSpawn.GetComponentsInChildren<Renderer>();
@@ -216,32 +255,41 @@ public class WallObjectSpawner : MonoBehaviour
 
                 if (isWindow) {
                     Vector3 scale = randomWallAnchor.GetAnchorSize();
-                    objectToSpawn.transform.localScale = new Vector3(scale.x + 0.25f, scale.y + 0.25f, 1f);
+                    objectToSpawn.transform.localScale = new Vector3(scale.x - 1.25f, scale.y - 0.5f, 0.30f);
 
                     // If it's a window, spawn it at the center of the anchor
                     Vector3 spawnPosition = randomWallAnchor.GetAnchorCenter() + facingDirection * offset;
-                    spawnPosition.y = spawnPosition.y - 0.15f;
+                    spawnPosition.y = spawnPosition.y - 0.5f;
                     spawnedObject = Instantiate(objectToSpawn, spawnPosition, Quaternion.identity);
+                    spawnedObject.transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
-
+                else if (isOnDoor)
+                {
+                    spawnedObject = Instantiate(objectToSpawn, positionOnWall, Quaternion.identity);
+                    spawnedObject.transform.rotation = Quaternion.identity;
+                }
                 else
                 {
                     spawnedObject = Instantiate(objectToSpawn, positionOnWall, Quaternion.identity);
                 }
 
-                // Determine the rotation based on the facing direction
-                if (Mathf.Abs(facingDirection.x) > Mathf.Abs(facingDirection.z))
+                if (!isOnDoor)
                 {
-                    // Rotate around z-axis if x is dominant
-                    float yRotation = facingDirection.x > 0 ? -90f : 90f;
-                    spawnedObject.transform.Rotate(0, yRotation, 0);
+                    // Determine the rotation based on the facing direction
+                    if (Mathf.Abs(facingDirection.x) > Mathf.Abs(facingDirection.z))
+                    {
+                        // Rotate around z-axis if x is dominant
+                        float yRotation = facingDirection.x > 0 ? -90f : 90f;
+                        spawnedObject.transform.Rotate(0, yRotation, 0);
+                    }
+                    else
+                    {
+                        // Rotate around x-axis if z is dominant
+                        float yRotation = facingDirection.z > 0 ? -180f : 0f;
+                        spawnedObject.transform.Rotate(0, yRotation, 0);
+                    }
                 }
-                else
-                {
-                    // Rotate around x-axis if z is dominant
-                    float yRotation = facingDirection.z > 0 ? -180f : 0f;
-                    spawnedObject.transform.Rotate(0, yRotation, 0);
-                }
+                
                 Debug.Log("[TEST] Object " + i + " has direction: " + facingDirection);
             }
             else

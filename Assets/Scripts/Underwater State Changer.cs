@@ -14,7 +14,6 @@ public class UnderwaterStateChanger : MonoBehaviour
     private OVRPassthroughColorLut lutNormal;
     private OVRPassthroughColorLut lutBlue;
     private float depth = 0;
-    private TMP_Text depthText;
 
     private bool wasUnderwater = false;
 
@@ -22,9 +21,6 @@ public class UnderwaterStateChanger : MonoBehaviour
     {
         lutNormal = new OVRPassthroughColorLut(normalLutTexture, true);
         lutBlue = new OVRPassthroughColorLut(blueLutTexture, true);
-        depthText = GameObject.Find("[BuildingBlock] Camera Rig/TrackingSpace/CenterEyeAnchor/Text (TMP) (1)").GetComponent<TMP_Text>();
-        GameObject background = depthText.transform.GetChild(0).gameObject;
-        background.SetActive(true);
     }
 
     void Update()
@@ -54,12 +50,10 @@ public class UnderwaterStateChanger : MonoBehaviour
         if (active)
         {
             passthroughLayer.SetColorLut(lutNormal, lutBlue, 1);
-            depthText.text = "blue";
         }
         else
         {
             passthroughLayer.SetColorLut(lutBlue, lutNormal, 1);
-            depthText.text = "normal";
         }
     }
 }

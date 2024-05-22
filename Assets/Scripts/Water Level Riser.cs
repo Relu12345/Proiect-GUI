@@ -17,6 +17,8 @@ public class WaterLevelRiser : MonoBehaviour
     private float initialDistanceToTarget;
     private float movementSpeed;
 
+    private bool waterRiseEnd = false;
+
     void Start()
     {
         timerText = GameObject.Find("[BuildingBlock] Camera Rig/TrackingSpace/CenterEyeAnchor/Text (TMP)").GetComponent<TMP_Text>();
@@ -37,8 +39,26 @@ public class WaterLevelRiser : MonoBehaviour
     private void Update()
     {
         gameTimeElapsed += Time.deltaTime;
-        UpdateTimer();
+        if (waterRiseEnd == false)
+            UpdateTimer();
         MoveTowardsTarget();
+    }
+
+    public void WaterEndGame()
+    {
+        waterRiseEnd = true;
+
+        MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        MRUKAnchor floorAnchor = room.FloorAnchor;
+
+        gameLengthInMinutes = 0.1f;
+
+        targetCeiling = floorAnchor.GetAnchorCenter().y - 1f;
+
+        targetPosition = new Vector3(transform.position.x, targetCeiling, transform.position.z);
+
+        initialDistanceToTarget = Vector3.Distance(transform.position, targetPosition);
+        movementSpeed = initialDistanceToTarget / (gameLengthInMinutes * 60);
     }
 
     private void UpdateTimer()
@@ -55,14 +75,18 @@ public class WaterLevelRiser : MonoBehaviour
     {
         float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
 
-        if (distanceToTarget > 0.1f)
+        if ((distanceToTarget > 0.1f && !waterRiseEnd) || (distanceToTarget > -0.1f && waterRiseEnd))
         {
             float step = movementSpeed * Time.deltaTime;
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
         }
-        else
+        else if (distanceToTarget <= 0.1f && !waterRiseEnd)
         {
             SceneManager.LoadScene(0);
+        }
+        else if (distanceToTarget <= -0.1f && waterRiseEnd)
+        {
+            Destroy(gameObject);
         }
     }
 }
